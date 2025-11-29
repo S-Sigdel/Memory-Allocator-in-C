@@ -1,4 +1,4 @@
-#include "malloc.h"
+#include "malloc_impl.h"
 #include <stdio.h>  //printing and debugging
 #include <unistd.h> // to use sbrk()
 
@@ -39,6 +39,41 @@ static header_t *extend_heap(size_t size) {
       request; // assign the sbrk address to the start of the header_t pointer
   new_block->size = size;
   new_block->is_free = 0;
+  // implementation of addding to the headers to the linked list
+  if (global_base == NULL) {
+    global_base = new_block;
+    new_block->prev = NULL;
+  } else {
+    header_t *last_block = global_base;
+    while (last_block->next != NULL) {
+      last_block = last_block->next;
+    }
+    last_block->next = new_block;
+    new_block->prev = last_block;
+  }
 
   return new_block;
+}
+
+void *my_malloc(size_t size) {
+  size_t alligned_size = ALIGN_SIZE(size + HEADER_SIZE);
+  if (size == 0) {
+    return NULL;
+  }
+  header_t *header = find_best_fit(
+      alligned_size); // find if pre-freed heap is available to reuse (best fit)
+
+  if (header) {
+    header->is_free = 0;
+    printf("Using best fit");
+    return (void *)(header + 1); // return, casted as a void pointer
+    //
+  }
+
+  header = extend_heap(
+      alligned_size); // if the above doesn't run, it extends the heap
+  if (!header)
+    return NULL;
+  printf("Using heap extention");
+  return (void *)(header + 1);
 }
