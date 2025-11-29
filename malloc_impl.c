@@ -77,3 +77,16 @@ void *my_malloc(size_t size) {
   printf("Using heap extention");
   return (void *)(header + 1);
 }
+
+void my_free(void *ptr) {
+  if (ptr == NULL) {
+    return; // already freed
+  }
+  header_t *header =
+      (header_t *)ptr - 1; // pointer to start of the header of the usable data
+  if (header->is_free) {
+    fprintf(stderr, "Warning: trying to free a freed block at %p\n", ptr);
+    return;
+  }
+  header->is_free = 1;
+}

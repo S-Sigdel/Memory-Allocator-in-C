@@ -7,6 +7,6 @@
 
 void *my_malloc(
     size_t size); // void pointer (able to cast to pointer of any data type)
-void free(void *ptr);
+void my_free(void *ptr);
 
 #endif
